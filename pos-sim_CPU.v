@@ -61,7 +61,6 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	//I: {op	rs	rt	immediate}
 	//instruction: stall {6'd16,5'd1,5'd1,16'd0} 所有寫入的動作都要否定，阿ALU繼續計算沒問題
 	//他沒有write enable，如果同時寫和讀應該會出事，所以我這邊用助教的寫法
-	//RF到底初始化
 	integer i;
 	always@(posedge Reset,posedge clk)begin
 		if(Reset)begin
@@ -221,6 +220,7 @@ module ALU_and_Control(data_1,data_2,Ins_31_26,Ins_5_0,Ins_15_0,ALU_result);
 	end
 endmodule
 
+//pipeline
 module IF_ID_Reg(clk,Instruction_in,Instruction_out,load_use_bool);
 	input clk,load_use_bool;
 	input [31:0]Instruction_in;
@@ -231,6 +231,7 @@ module IF_ID_Reg(clk,Instruction_in,Instruction_out,load_use_bool);
 	end
 endmodule
 
+//pipeline
 module ID_EXE_Reg(clk,Read_data1_in,Read_data2_in,Read_data1_out,Read_data2_out,
 MemRead_in,MemtoReg_in,MemWrite_in,RegWrite_in,Write_register_in,MemRead_out,MemtoReg_out,MemWrite_out,
 RegWrite_out,Write_register_out,instruction_ver2,instruction_ver3,Read_register1_in,Read_register2_in,Read_register1_out,Read_register2_out);
@@ -251,10 +252,10 @@ RegWrite_out,Write_register_out,instruction_ver2,instruction_ver3,Read_register1
 	end
 endmodule
 
-module EXE_MEM(Reset,clk,
-Address_in,Write_data_RAM_in,MemWrite_in,RegWrite_in,Write_register_in,MemtoReg_in,
-Address_out,Write_data_RAM_out,MemWrite_out,RegWrite_out,Write_register_out,MemtoReg_out,
-Ins_31_26_in,Ins_31_26_out);
+//pipeline
+module EXE_MEM_Reg(Reset,clk,Address_in,Write_data_RAM_in,MemWrite_in,RegWrite_in,
+Write_register_in,MemtoReg_in,Address_out,Write_data_RAM_out,MemWrite_out,RegWrite_out,
+Write_register_out,MemtoReg_out,Ins_31_26_in,Ins_31_26_out);
 
 	input Reset,clk,MemWrite_in,RegWrite_in,MemtoReg_in;
 	input [31:0]Address_in,Write_data_RAM_in;
@@ -295,8 +296,10 @@ Ins_31_26_in,Ins_31_26_out);
 	end
 endmodule
 
-module MEM_WB(Reset,clk,RegWrite_2,RegWrite_3,Write_data_in,Write_data_out,Write_register_in,Write_register_out,
-Ins_31_26_out,Ins_31_26_in);
+//pipeline
+module MEM_WB_Reg(Reset,clk,RegWrite_2,RegWrite_3,Write_data_in,Write_data_out,Write_register_in,
+Write_register_out,Ins_31_26_out,Ins_31_26_in);
+
 	input RegWrite_2,clk,Reset;
 	input [31:0] Write_data_in;
 	input [4:0]Write_register_in;
@@ -332,8 +335,12 @@ Ins_31_26_out,Ins_31_26_in);
 	end
 endmodule
 
-module CPU(Reset, clk,instruction_output_stage_1,ALU_result_output_stage_3,Write_data_output_stage_4,Write_data_output_stage_5, RF_data0,RF_data1,RF_data2,RF_data3,RF_data4,RF_data5,RF_data6,RF_data7,RF_data8,RF_data9,RF_data10,RF_data11,RF_data12,RF_data13,RF_data14,RF_data15,
-RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,RF_data24,RF_data25,RF_data26,RF_data27,RF_data28,RF_data29,RF_data30,RF_data31);
+//top CPU.v
+module CPU(Reset, clk,instruction_output_stage_1,ALU_result_output_stage_3,Write_data_output_stage_4,Write_data_output_stage_5, 
+RF_data0,RF_data1,RF_data2,RF_data3,RF_data4,RF_data5,RF_data6,RF_data7,RF_data8,RF_data9,RF_data10,RF_data11,RF_data12,RF_data13,
+RF_data14,RF_data15,RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,RF_data24,RF_data25,RF_data26,
+RF_data27,RF_data28,RF_data29,RF_data30,RF_data31);
+
 	input Reset, clk;
     output wire[31:0]instruction_output_stage_1;
     output wire[31:0]ALU_result_output_stage_3;
@@ -350,7 +357,7 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	wire Jump_1,Branch_1,RegDst_1,MemRead_1,MemtoReg_1,MemWrite_1,RegWrite_1;
 	reg stall_detect;
 
-//stage 1 PC sequential logic
+//-------stage 1 PC sequential logic-----------------------
 	reg load_use_harzard;
 	reg [31:0]next_pc;
 	always@(posedge Reset,posedge clk)begin
@@ -362,7 +369,7 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
     assign instruction_output_stage_1=cur_Insctructions_ver1;
 
 	InstructionMemory U1(.Address(pc),.Instruction(cur_Insctructions_ver0));
-	//--------IF_ID input Instruction, output: Instruction--------
+//--------IF_ID input Instruction, output: Instruction--------
 	
 	always@(*)begin
 		if(cur_Insctructions_ver2[31:26]==6'd35&&cur_Insctructions_ver2[20:16]==cur_Insctructions_ver1[25:21])load_use_harzard=1'b1;
@@ -371,10 +378,11 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	end
     
 	IF_ID_Reg U5(.clk(clk),.Instruction_in(cur_Insctructions_ver1),.Instruction_out(cur_Insctructions_ver2),.load_use_bool(load_use_harzard));
-	//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 	
-//stage 2 instruction-> Control logic+RF+Jump&branch detection(為了stall)
-//如果當前instruction為lw且下一個instruction會造成harzard，pc就暫時不動且下個指令是stall
+//-----stage 2 instruction-> Control logic+RF+Jump&branch detection(為了stall)-----
+//-----如果當前instruction為lw且下一個instruction會造成harzard，pc就暫時不動且下個指令是stall-----
+
 	always@(*)begin
 		if(stall_detect==1'b1)cur_Insctructions_ver1={6'd17,5'd1,5'd1, 16'd0};
 		else cur_Insctructions_ver1=cur_Insctructions_ver0;
@@ -428,10 +436,10 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 		else next_pc=pc+32'd4;
 	end
 	//----------------------------------------
-	output wire[31:0]RF_data1;output wire [31:0]RF_data2;output wire [31:0]RF_data3;
-	output wire [31:0]RF_data4;output wire[31:0]RF_data5;output wire [31:0]RF_data6;
+	output wire [31:0]RF_data1;output wire [31:0]RF_data2;output wire [31:0]RF_data3;
+	output wire [31:0]RF_data4;output wire [31:0]RF_data5;output wire [31:0]RF_data6;
 	output wire [31:0]RF_data7;output wire [31:0]RF_data8;output wire [31:0]RF_data9;
-	output wire[31:0]RF_data10;output wire [31:0]RF_data11;output wire [31:0]RF_data12;
+	output wire [31:0]RF_data10;output wire [31:0]RF_data11;output wire [31:0]RF_data12;
 	output wire [31:0]RF_data13;output wire [31:0]RF_data14;output wire [31:0]RF_data15;
 	output wire [31:0]RF_data16;output wire [31:0]RF_data17;output wire [31:0]RF_data18;
 	output wire [31:0]RF_data19;output wire [31:0]RF_data20;output wire [31:0]RF_data21;
@@ -440,8 +448,9 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	output wire [31:0]RF_data28;output wire [31:0]RF_data29;output wire [31:0]RF_data30;
 	output wire [31:0]RF_data31;output wire [31:0]RF_data0;
 	//----------------------------------------
-	//處理Write Back Harzard
-	//Read_data1_1和Read_data2_1是已經考慮過Write Back Harzard後的正確結果
+	//-----處理Write_Back_Harzard，主要是因為我們利用register模擬Data Memory，所以等一個cycle資料才會寫入-----
+	//-----Read_data1_1和Read_data2_1是已經考慮過Write Back Harzard後的正確結果-----
+
 	always@(*)begin
 		if(Read_register1_ver1==Write_register_4&&RegWrite_4==1'b1)begin Read_data1_1=Write_data_3;Write_Back_Harzard_1=1'b1;end//還來不及寫入(差一個clk)馬上就被讀取，這邊才是最新的
 		else begin Read_data1_1=Read_data1_1_from_RF; Write_Back_Harzard_1=1'b0;end//沒問題
@@ -454,8 +463,9 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	RegisterFile U2(.Reset(Reset),.clk(clk),.RegWrite(RegWrite_4),.Read_register1(Read_register1_ver1),.Read_register2(Read_register2_ver1),.Write_register(Write_register_4),.Write_data(Write_data_3),.Write_enable(1'b1),.Read_data1(Read_data1_1_from_RF),.Read_data2(Read_data2_1_from_RF),
 	.RF_data0(RF_data0),.RF_data1(RF_data1),.RF_data2(RF_data2),.RF_data3(RF_data3),.RF_data4(RF_data4),.RF_data5(RF_data5),.RF_data6(RF_data6),.RF_data7(RF_data7),.RF_data8(RF_data8),.RF_data9(RF_data9),.RF_data10(RF_data10),.RF_data11(RF_data11),.RF_data12(RF_data12),.RF_data13(RF_data13),.RF_data14(RF_data14),.RF_data15(RF_data15),
 	.RF_data16(RF_data16),.RF_data17(RF_data17),.RF_data18(RF_data18),.RF_data19(RF_data19),.RF_data20(RF_data20),.RF_data21(RF_data21),.RF_data22(RF_data22),.RF_data23(RF_data23),.RF_data24(RF_data24),.RF_data25(RF_data25),.RF_data26(RF_data26),.RF_data27(RF_data27),.RF_data28(RF_data28),.RF_data29(RF_data29),.RF_data30(RF_data30),.RF_data31(RF_data31));
-	//這一段會加入Harzard detection，為了避免branch or jump 後要flush前兩個Instruction，所以這個logic會去盡早更新pc
-	//ID_EXE input&output Control的所有輸出(包含ALU所需、Data_RAM所需、write_back所需),read_data_1,read_data_2,
+	//-----這一段會加入Harzard detection，為了避免branch or jump 後要flush前兩個Instruction，所以這個logic會去盡早更新pc-----
+	//-----ID_EXE input&output Control的所有輸出(包含ALU所需、Data_RAM所需、write_back所需),read_data_1,read_data_2-----
+
 	wire [4:0]Read_register1_ver2,Read_register2_ver2;
 
 	ID_EXE_Reg U7(.clk(clk),.Read_data1_in(Read_data1_1),.Read_data2_in(Read_data2_1),.Read_data1_out(Read_data1_2),.Read_data2_out(Read_data2_2),
@@ -465,7 +475,8 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	.Read_register1_out(Read_register1_ver2),.Read_register2_out(Read_register2_ver2));
 	//以及為了forward unit(為了解決EXE or MEM data Harzard)要多傳read_reg_1,read_reg_2
 
-//stage 3 ALU_and_Control
+//-----stage 3 ALU_and_Control-----
+
 	wire [5:0]Ins_5_0;
 	wire [5:0]Ins_31_26_stage3;
 	wire [5:0]Ins_31_26_stage4,Ins_31_26_stage5;
@@ -514,14 +525,14 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	end
 	
 	ALU_and_Control U3(.data_1(Read_data1_2_after_forward),.data_2(Read_data2_2_after_forward),.Ins_31_26(Ins_31_26_stage3),.Ins_5_0(Ins_5_0),.Ins_15_0(Ins_15_0),.ALU_result(ALU_result));
-	//這一段會加入forward unit(為了解決EXE or MEM data Harzard)
-	//EXE_MEM input&output Control的所有輸出(包含Data_RAM所需、write_back所需)，以及D_RAM要用的address和write_data
+	//-----這一段會加入forward unit(為了解決EXE or MEM data Harzard)
+	//-----EXE_MEM input&output Control的所有輸出(包含Data_RAM所需、write_back所需)，以及D_RAM要用的address和write_data
 	assign ALU_result_output_stage_3=ALU_result;
 
-    EXE_MEM U9(.Reset(Reset),.clk(clk),.Address_in(ALU_result),.Write_data_RAM_in(Read_data2_2_after_forward),.MemWrite_in(MemWrite_2),.RegWrite_in(RegWrite_2),.Write_register_in(Write_register_2),.MemtoReg_in(MemtoReg_2),
+    EXE_MEM_Reg U9(.Reset(Reset),.clk(clk),.Address_in(ALU_result),.Write_data_RAM_in(Read_data2_2_after_forward),.MemWrite_in(MemWrite_2),.RegWrite_in(RegWrite_2),.Write_register_in(Write_register_2),.MemtoReg_in(MemtoReg_2),
 	.Address_out(ALU_result_out),.Write_data_RAM_out(Read_data2_3),.MemWrite_out(MemWrite_3),.RegWrite_out(RegWrite_3),.Write_register_out(Write_register_3),.MemtoReg_out(MemtoReg_3),.Ins_31_26_in(Ins_31_26_stage3),.Ins_31_26_out(Ins_31_26_stage4));
 
-//stage 4 write back logic(要把RegWrite_3,Write_register_3,Write_data_2傳回stage 2的RF中)
+//-----stage 4 write back logic(要把RegWrite_3,Write_register_3,Write_data_2傳回stage 2的RF中)
 	//MEM_WB會等兩個clk(如果有在多插入就是三個)後根據Reg_write_2決定是否要寫入，在此之前都是Reg_write_3都是0
 	wire [31:0]Read_data_from_ram;
 
@@ -531,6 +542,7 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 		else Write_data_2=ALU_result_out;   //直接寫進register
 	end
 	assign Write_data_output_stage_4=Write_data_2;
-	MEM_WB U8(.Reset(Reset),.clk(clk),.RegWrite_2(RegWrite_3),.RegWrite_3(RegWrite_4),.Write_data_in(Write_data_2),.Write_data_out(Write_data_3),.Write_register_in(Write_register_3),.Write_register_out(Write_register_4),.Ins_31_26_in(Ins_31_26_stage4),.Ins_31_26_out(Ins_31_26_stage5));
+	MEM_WB_Reg U8(.Reset(Reset),.clk(clk),.RegWrite_2(RegWrite_3),.RegWrite_3(RegWrite_4),.Write_data_in(Write_data_2),.Write_data_out(Write_data_3),.Write_register_in(Write_register_3),.Write_register_out(Write_register_4),.Ins_31_26_in(Ins_31_26_stage4),.Ins_31_26_out(Ins_31_26_stage5));
     assign Write_data_output_stage_5=Write_data_3;
+    
 endmodule
