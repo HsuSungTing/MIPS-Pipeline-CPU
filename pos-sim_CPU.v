@@ -41,14 +41,15 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 
 	input Reset,clk,Write_enable;
 	input RegWrite;
-    input [4:0] Read_register1, Read_register2, Write_register;
-    input [31:0]Write_data;
-    output [31:0]Read_data1, Read_data2;
+    	input [4:0] Read_register1, Read_register2, Write_register;
+    	input [31:0]Write_data;
+    	output [31:0]Read_data1, Read_data2;
+	
 	//外加的
-	output wire[31:0]RF_data1;output wire [31:0]RF_data2;output wire [31:0]RF_data3;
-	output wire [31:0]RF_data4;output wire[31:0]RF_data5;output wire [31:0]RF_data6;
-	output wire [31:0]RF_data7;output wire [31:0]RF_data8;output wire [31:0]RF_data9;
-	output wire[31:0]RF_data10;output wire [31:0]RF_data11;output wire [31:0]RF_data12;
+	output wire [31:0]RF_data1; output wire [31:0]RF_data2; output wire [31:0]RF_data3;
+	output wire [31:0]RF_data4; output wire [31:0]RF_data5; output wire [31:0]RF_data6;
+	output wire [31:0]RF_data7; output wire [31:0]RF_data8; output wire [31:0]RF_data9;
+	output wire [31:0]RF_data10;output wire [31:0]RF_data11;output wire [31:0]RF_data12;
 	output wire [31:0]RF_data13;output wire [31:0]RF_data14;output wire [31:0]RF_data15;
 	output wire [31:0]RF_data16;output wire [31:0]RF_data17;output wire [31:0]RF_data18;
 	output wire [31:0]RF_data19;output wire [31:0]RF_data20;output wire [31:0]RF_data21;
@@ -77,10 +78,10 @@ RF_data16,RF_data17,RF_data18,RF_data19,RF_data20,RF_data21,RF_data22,RF_data23,
 	assign Read_data1 = (Read_register1 == 5'b00000)? 32'h00000000: RF_data[Read_register1];
 	assign Read_data2 = (Read_register2 == 5'b00000)? 32'h00000000: RF_data[Read_register2];
 	
-	assign RF_data0=RF_data[0];assign RF_data1=RF_data[1];assign RF_data2=RF_data[2];
-	assign RF_data3=RF_data[3];assign RF_data4=RF_data[4];assign RF_data5=RF_data[5];
-	assign RF_data6=RF_data[6];assign RF_data7=RF_data[7];assign RF_data8=RF_data[8];
-	assign RF_data9=RF_data[9];assign RF_data10=RF_data[10];assign RF_data11=RF_data[11];
+	assign RF_data0=RF_data[0];  assign RF_data1=RF_data[1];  assign RF_data2=RF_data[2];
+	assign RF_data3=RF_data[3];  assign RF_data4=RF_data[4];  assign RF_data5=RF_data[5];
+	assign RF_data6=RF_data[6];  assign RF_data7=RF_data[7];  assign RF_data8=RF_data[8];
+	assign RF_data9=RF_data[9];  assign RF_data10=RF_data[10];assign RF_data11=RF_data[11];
 	assign RF_data12=RF_data[12];assign RF_data13=RF_data[13];assign RF_data14=RF_data[14];
 	assign RF_data15=RF_data[15];assign RF_data16=RF_data[16];assign RF_data17=RF_data[17];
 	assign RF_data18=RF_data[18];assign RF_data19=RF_data[19];assign RF_data20=RF_data[20];
@@ -398,6 +399,7 @@ RF_data27,RF_data28,RF_data29,RF_data30,RF_data31);
 		else Write_register_1=cur_Insctructions_ver2[15:11];           //R type
 	end
 	//-----------------------------------------------------------------------------------
+	
 	wire RegWrite_2,RegWrite_3,RegWrite_4;
 	reg [31:0]Write_data_1,Write_data_2;
 	wire [31:0]Write_data_3;
@@ -406,6 +408,7 @@ RF_data27,RF_data28,RF_data29,RF_data30,RF_data31);
 	wire MemRead_2,MemtoReg_2,MemWrite_2,RegDst_2;
 	wire [17:0]branch_offset;
 	wire [31:0]jump_offset;
+	
 	assign branch_offset={cur_Insctructions_ver2[15:0],2'd0};//offset 要乘以4
 	assign jump_offset={4'd0,cur_Insctructions_ver2[25:0],2'd0};
 	
@@ -413,6 +416,7 @@ RF_data27,RF_data28,RF_data29,RF_data30,RF_data31);
 	wire [31:0]ALU_result_out;
 	reg Write_Back_Harzard_1,Write_Back_Harzard_2;
 	wire [31:0]Read_data1_1_from_RF,Read_data2_1_from_RF;
+	
 	//---beq的forward logic(因為beq提前到satge 2判斷所以要額外處理)----------
 	always@(*)begin
 		if(Branch_1 == 1'b1&&Write_register_3==Read_register1_ver1)begin Read_data1_1_for_beq=ALU_result_out; end
