@@ -1,0 +1,5 @@
+register file的輸出是後來為了pos-sim才加上去的
+
+因為vivado會自動把"不會影響module輸出的logic"直接優化掉
+
+我們原本的RTL都是寫入DRAM以及register file中內部的register，但這些結果會被vivado視為內部訊號，在合成的時候優化掉，所以必須把DRAM以及register file中內部的register設定成module輸出(但缺點是不美觀，port太多)，經過Pos-sim後確認我們的電路是可以合成的

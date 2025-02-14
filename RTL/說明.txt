@@ -1,0 +1,8 @@
+到時候我們一定會忘記(這很正常，畢竟學的東西太多)
+到時候複習的順序可以如下:
+
+1. 計組筆記ch4
+2. single cycle CPU
+3. 5_stages_pipeline_但未解決Hazard
+4. 5_stages_pipeline_已解決EXE_and_MEM_Hazard
+5. Final_ver
