@@ -336,12 +336,12 @@ module CPU(Reset, clk);
 	//----------------------------------------------------------------------------
 	
 //stage 2 instruction-> Control logic+RF+Jump&branch detection(為了stall)
-//如果當前instruction為lw且下一個instruction會造成harzard，pc就暫時不動且下個指令是stall
+	//如果當前instruction為lw且下一個instruction會造成harzard，pc就暫時不動且下個指令是stall
 	always@(*)begin
 		if(stall_detect==1'b1)cur_Insctructions_ver1={6'd17,5'd1,5'd1, 16'd0};
 		else cur_Insctructions_ver1=cur_Insctructions_ver0;
 	end
-    reg ALUSrc_1;
+    	reg ALUSrc_1;
 	//.Ins_31_26(Ins_31_26)用ver2
 	Control U0(.Ins_31_26(Ins_31_26_stage2),.Jump(Jump_1),.Branch(Branch_1),.RegDst(RegDst_1),.MemRead(MemRead_1),.MemtoReg(MemtoReg_1),.MemWrite(MemWrite_1),.ALUSrc(ALUSrc_1),.RegWrite(RegWrite_1));
 	//cur_Insctructions mapping到Read_register1,Read_register2,Write_register;缺writ_edata------------------
